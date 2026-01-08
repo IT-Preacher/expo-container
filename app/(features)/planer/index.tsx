@@ -1,5 +1,7 @@
 import { Button } from "@/components/Button";
 import { device, radii, spacing, typography } from "@/config";
+import { generateUUID } from "@/utils/uuid";
+import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import {
   FlatList,
@@ -11,17 +13,60 @@ import {
   View,
 } from "react-native";
 
-const ListItem = <T,>({ item }: { item: T }) => {
+type Task = {
+  uuid: string;
+  name: string;
+};
+
+function Action({
+  icon,
+  onPress,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable onPress={onPress} style={styles.action}>
+      <Ionicons name={icon} size={20} color="#fff" />
+    </Pressable>
+  );
+}
+
+const ListItem = ({
+  item,
+  isSelected,
+  handleDelete,
+  handleEdit,
+  handleAttach,
+  handleSelect,
+  handleClear,
+}: {
+  item: Task;
+  isSelected: boolean;
+  handleDelete: () => void;
+  handleEdit: () => void;
+  handleAttach: () => void;
+  handleSelect: () => void;
+  handleClear: () => void;
+}) => {
   return (
     <Pressable
-      onLongPress={() => console.log("LOG PRESS")}
+      onLongPress={handleSelect}
+      onPress={() => isSelected && handleClear()}
       style={{
         backgroundColor: "white",
         padding: spacing.md,
         borderRadius: radii.sm,
       }}
     >
-      <Text>{String(item)}</Text>
+      <Text>{String(item.name)}</Text>
+      {isSelected && (
+        <View style={styles.actions}>
+          <Action icon="trash" onPress={handleDelete} />
+          <Action icon="create" onPress={handleEdit} />
+          <Action icon="link" onPress={handleAttach} />
+        </View>
+      )}
     </Pressable>
   );
 };
@@ -66,10 +111,23 @@ const ListFooter = ({
 };
 
 export default function Planer() {
-  const [tasks, setTask] = useState<string[]>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const handleAddTask = (newTask: string) => {
-    setTask([...tasks, newTask]);
+    setTasks((prev) => [...prev, { name: newTask, uuid: generateUUID() }]);
+  };
+
+  const handleDeleteTask = (uuid: string) => {
+    setTasks((prev) => prev.filter((item) => item.uuid !== uuid));
+  };
+
+  const handleEdit = (uuid: string) => {
+    console.log("EDIT");
+  };
+
+  const handleAttach = (uuid: string) => {
+    console.log("ATTACH");
   };
 
   return (
@@ -78,7 +136,17 @@ export default function Planer() {
     >
       <FlatList
         data={tasks}
-        renderItem={({ item }) => <ListItem item={item} />}
+        renderItem={({ item }) => (
+          <ListItem
+            item={item}
+            isSelected={selectedId === item.uuid}
+            handleSelect={() => setSelectedId(item.uuid)}
+            handleClear={() => setSelectedId(null)}
+            handleDelete={() => handleDeleteTask(item.uuid)}
+            handleEdit={() => handleEdit(item.uuid)}
+            handleAttach={() => handleAttach(item.uuid)}
+          />
+        )}
         style={styles.list}
         contentContainerStyle={{ gap: spacing.sm }}
       />
@@ -96,5 +164,36 @@ const styles = StyleSheet.create({
   },
   list: {
     // backgroundColor: "orange",
+  },
+  // Secondary components
+  itemContainer: {
+    backgroundColor: "#fff",
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  pressed: {
+    opacity: 0.85,
+  },
+  selected: {
+    backgroundColor: "#EAF2FF",
+    borderWidth: 1,
+    borderColor: "#007AFF",
+  },
+  text: {
+    fontSize: 16,
+  },
+  actions: {
+    flexDirection: "row",
+    marginTop: 12,
+    gap: 12,
+  },
+  action: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#007AFF",
+    justifyContent: "center",
+    alignItems: "center",
   },
 });
