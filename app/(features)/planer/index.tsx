@@ -1,8 +1,10 @@
 import { Button } from "@/components/Button";
 import { device, radii, spacing, typography } from "@/config";
+import { useSecureStore } from "@/hooks/use-secure-data-store";
+import { SecureStoreKey } from "@/storage";
 import { generateUUID } from "@/utils/uuid";
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
@@ -53,13 +55,14 @@ const ListItem = ({
     <Pressable
       onLongPress={handleSelect}
       onPress={() => isSelected && handleClear()}
-      style={{
-        backgroundColor: "white",
-        padding: spacing.md,
-        borderRadius: radii.sm,
-      }}
+      style={({ pressed }) => [
+        styles.itemContainer,
+        isSelected && styles.selected,
+        pressed && styles.pressed,
+      ]}
     >
       <Text>{String(item.name)}</Text>
+
       {isSelected && (
         <View style={styles.actions}>
           <Action icon="trash" onPress={handleDelete} />
@@ -111,8 +114,17 @@ const ListFooter = ({
 };
 
 export default function Planer() {
+  const { set, get } = useSecureStore();
+  const getDataFromStore = async () => await get(SecureStoreKey.planer);
+  console.log("DATA ", getDataFromStore());
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const setDataInStore = async () => await set(SecureStoreKey.planer, tasks);
+
+    setDataInStore();
+  }, [tasks, set]);
 
   const handleAddTask = (newTask: string) => {
     setTasks((prev) => [...prev, { name: newTask, uuid: generateUUID() }]);
@@ -160,25 +172,22 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
-    // backgroundColor: "blue",
   },
-  list: {
-    // backgroundColor: "orange",
-  },
+  list: {},
   // Secondary components
   itemContainer: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
+    backgroundColor: "white",
+    padding: spacing.md,
+    borderRadius: radii.sm,
   },
   pressed: {
     opacity: 0.85,
   },
   selected: {
-    backgroundColor: "#EAF2FF",
+    backgroundColor: "white",
     borderWidth: 1,
     borderColor: "#007AFF",
+    borderRadius: radii.sm,
   },
   text: {
     fontSize: 16,
