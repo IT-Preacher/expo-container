@@ -1,8 +1,10 @@
+import { useThemeColor } from "@/hooks/use-theme-color";
+import { HeaderBackButton } from "@react-navigation/elements";
 import { Stack, useRouter } from "expo-router";
-import { Button } from "react-native";
 
 export default function PlanerLayout() {
   const router = useRouter();
+  const color = useThemeColor({}, "text");
 
   return (
     <Stack
@@ -10,7 +12,14 @@ export default function PlanerLayout() {
         headerShown: true,
         headerTitleAlign: "center",
         title: "Planer",
-        headerLeft: () => <Button title="Back" onPress={() => router.back()} />,
+        headerLeft: (props) => (
+          <HeaderBackButton
+            {...props}
+            tintColor={color}
+            label="Back"
+            onPress={() => router.back()}
+          />
+        ),
       }}
     />
   );
