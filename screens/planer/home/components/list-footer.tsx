@@ -1,7 +1,7 @@
 import { Button } from "@/components/Button";
 import { radii, spacing, typography } from "@/config";
 import { useState } from "react";
-import { TextInput, View } from "react-native";
+import { StyleSheet, TextInput, View } from "react-native";
 
 export const ListFooter = ({
   handleButtonPress,
@@ -16,24 +16,12 @@ export const ListFooter = ({
   };
 
   return (
-    <View
-      style={{
-        flexDirection: "row",
-        gap: spacing.md,
-        paddingTop: spacing.md,
-      }}
-    >
+    <View style={styles.container}>
       <TextInput
         value={text}
         onChangeText={setText}
         placeholder="New Task"
-        style={{
-          flex: 1,
-          backgroundColor: "white",
-          fontSize: typography.body,
-          paddingHorizontal: spacing.md,
-          borderRadius: radii.lg,
-        }}
+        style={styles.input}
       />
       <View>
         <Button title="+" variant="round" onPress={handleAddNewTask} />
@@ -41,3 +29,19 @@ export const ListFooter = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    gap: spacing.md,
+    paddingTop: spacing.md,
+    marginHorizontal: spacing.md,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: "white",
+    fontSize: typography.body,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.lg,
+  },
+});
