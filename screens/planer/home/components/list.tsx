@@ -1,6 +1,10 @@
 import { radii, spacing } from "@/config";
 import { Ionicons } from "@expo/vector-icons";
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import DraggableFlatList, {
+  RenderItemParams,
+  ScaleDecorator,
+} from "react-native-draggable-flatlist";
 import { Task } from "../types";
 
 const Action = ({
@@ -19,6 +23,8 @@ const Action = ({
 
 const ListItem = ({
   item,
+  drag,
+  isActive,
   isSelected,
   handleDelete,
   handleEdit,
@@ -27,6 +33,8 @@ const ListItem = ({
   handleClear,
 }: {
   item: Task;
+  drag: () => void;
+  isActive: boolean;
   isSelected: boolean;
   handleDelete: () => void;
   handleEdit: () => void;
@@ -35,50 +43,70 @@ const ListItem = ({
   handleClear: () => void;
 }) => {
   return (
-    <Pressable
-      onLongPress={handleSelect}
-      onPress={() => isSelected && handleClear()}
-      style={({ pressed }) => [
-        styles.itemContainer,
-        isSelected && styles.selected,
-        pressed && styles.pressed,
-      ]}
-    >
-      <Text>{String(item.name)}</Text>
-
-      {isSelected && (
-        <View style={styles.actions}>
-          <Action icon="trash" onPress={handleDelete} />
-          <Action icon="create" onPress={handleEdit} />
-          <Action icon="link" onPress={handleAttach} />
+    <ScaleDecorator>
+      <Pressable
+        onLongPress={handleSelect}
+        onPressIn={drag}
+        onPress={() => isSelected && handleClear()}
+        disabled={isActive}
+        style={({ pressed }) => [
+          styles.itemContainer,
+          isActive && styles.selected,
+          pressed && styles.pressed,
+        ]}
+      >
+        <View style={styles.itemContent}>
+          <Text style={styles.text}>{String(item.name)}</Text>
+          <Pressable onPressIn={drag} hitSlop={10}>
+            <Ionicons name="reorder-two" size={24} color="#ccc" />
+          </Pressable>
         </View>
-      )}
-    </Pressable>
+
+        {isSelected && (
+          <View style={styles.actions}>
+            <Action icon="trash" onPress={handleDelete} />
+            <Action icon="create" onPress={handleEdit} />
+            <Action icon="link" onPress={handleAttach} />
+          </View>
+        )}
+      </Pressable>
+    </ScaleDecorator>
   );
 };
 
 type ListProps<T> = {
-  data: T[] | null;
+  data: T[];
   handlers: {
     handleSelect: (uuid: string) => void;
     handleClear: () => void;
     handleDelete: (uuid: string) => void;
     handleEdit: (uuid: string) => void;
     handleAttach: (uuid: string) => void;
+    handleDragEnd: (params: { data: T[] }) => void;
   };
   selectedUuid: null | string;
 };
 
 export const List = ({ data, handlers, selectedUuid }: ListProps<Task>) => {
-  const { handleSelect, handleClear, handleDelete, handleEdit, handleAttach } =
-    handlers;
+  const {
+    handleSelect,
+    handleClear,
+    handleDelete,
+    handleEdit,
+    handleAttach,
+    handleDragEnd,
+  } = handlers;
 
   return (
-    <FlatList
+    <DraggableFlatList
       data={data}
-      renderItem={({ item }) => (
+      onDragEnd={handleDragEnd}
+      keyExtractor={(item) => item.uuid}
+      renderItem={({ item, drag, isActive }: RenderItemParams<Task>) => (
         <ListItem
           item={item}
+          drag={drag}
+          isActive={isActive}
           isSelected={selectedUuid === item.uuid}
           handleSelect={() => handleSelect(item.uuid)}
           handleClear={handleClear}
@@ -99,6 +127,12 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: spacing.md,
     borderRadius: radii.sm,
+    marginHorizontal: spacing.md,
+  },
+  itemContent: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
   },
   pressed: {
     opacity: 0.85,

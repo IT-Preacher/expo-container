@@ -25,7 +25,7 @@ const mockApi = {
 
 export default function PlanerScreen() {
   const {
-    data: tasks = [],
+    data: tasksData,
     update: setTasks,
     isLoading,
   } = useOfflineFirst<Task[]>({
@@ -34,18 +34,17 @@ export default function PlanerScreen() {
     // pushRemote: mockApi.pushTasks,
   });
 
+  const tasks = tasksData || [];
+
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const handleAddTask = (newTask: string) => {
-    const newTasks = [
-      ...(tasks || []),
-      { name: newTask, uuid: generateUUID() },
-    ];
+    const newTasks = [...tasks, { name: newTask, uuid: generateUUID() }];
     setTasks(newTasks);
   };
 
   const handleDeleteTask = (uuid: string) => {
-    const newTasks = (tasks || []).filter((item) => item.uuid !== uuid);
+    const newTasks = tasks.filter((item) => item.uuid !== uuid);
     setTasks(newTasks);
   };
 
@@ -57,12 +56,17 @@ export default function PlanerScreen() {
     console.log("ATTACH");
   };
 
+  const handleDragEnd = ({ data }: { data: Task[] }) => {
+    setTasks(data);
+  };
+
   const handlers = {
     handleAttach,
     handleEdit,
     handleDelete: handleDeleteTask,
     handleSelect: setSelectedId,
     handleClear: () => setSelectedId(null),
+    handleDragEnd,
   };
 
   return (
@@ -78,7 +82,7 @@ export default function PlanerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: spacing.md,
+    justifyContent: "space-between",
     paddingVertical: spacing.md,
   },
 });
