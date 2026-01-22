@@ -7,27 +7,12 @@ import DraggableFlatList, {
 } from "react-native-draggable-flatlist";
 import { Task } from "../types";
 
-const Action = ({
-  icon,
-  onPress,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  onPress: () => void;
-}) => {
-  return (
-    <Pressable onPress={onPress} style={styles.action}>
-      <Ionicons name={icon} size={20} color="#fff" />
-    </Pressable>
-  );
-};
-
 const ListItem = ({
   item,
   drag,
   isActive,
   isSelected,
   handleDelete,
-  handleEdit,
   handleAttach,
   handleSelect,
   handleClear,
@@ -37,7 +22,6 @@ const ListItem = ({
   isActive: boolean;
   isSelected: boolean;
   handleDelete: () => void;
-  handleEdit: () => void;
   handleAttach: () => void;
   handleSelect: () => void;
   handleClear: () => void;
@@ -61,14 +45,6 @@ const ListItem = ({
             <Ionicons name="reorder-two" size={24} color="#ccc" />
           </Pressable>
         </View>
-
-        {isSelected && (
-          <View style={styles.actions}>
-            <Action icon="trash" onPress={handleDelete} />
-            <Action icon="create" onPress={handleEdit} />
-            <Action icon="link" onPress={handleAttach} />
-          </View>
-        )}
       </Pressable>
     </ScaleDecorator>
   );
@@ -77,22 +53,20 @@ const ListItem = ({
 type ListProps<T> = {
   data: T[];
   handlers: {
-    handleSelect: (uuid: string) => void;
+    handleSelect: (item: Task) => void;
     handleClear: () => void;
     handleDelete: (uuid: string) => void;
-    handleEdit: (uuid: string) => void;
     handleAttach: (uuid: string) => void;
     handleDragEnd: (params: { data: T[] }) => void;
   };
-  selectedUuid: null | string;
+  selectedItem: Task | null;
 };
 
-export const List = ({ data, handlers, selectedUuid }: ListProps<Task>) => {
+export const List = ({ data, handlers, selectedItem }: ListProps<Task>) => {
   const {
     handleSelect,
     handleClear,
     handleDelete,
-    handleEdit,
     handleAttach,
     handleDragEnd,
   } = handlers;
@@ -107,11 +81,10 @@ export const List = ({ data, handlers, selectedUuid }: ListProps<Task>) => {
           item={item}
           drag={drag}
           isActive={isActive}
-          isSelected={selectedUuid === item.uuid}
-          handleSelect={() => handleSelect(item.uuid)}
+          isSelected={selectedItem?.uuid === item.uuid}
+          handleSelect={() => handleSelect(item)}
           handleClear={handleClear}
           handleDelete={() => handleDelete(item.uuid)}
-          handleEdit={() => handleEdit(item.uuid)}
           handleAttach={() => handleAttach(item.uuid)}
         />
       )}
@@ -145,18 +118,5 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-  },
-  actions: {
-    flexDirection: "row",
-    marginTop: 12,
-    gap: 12,
-  },
-  action: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#007AFF",
-    justifyContent: "center",
-    alignItems: "center",
   },
 });

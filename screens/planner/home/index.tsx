@@ -3,52 +3,38 @@ import { useOfflineFirst } from "@/hooks/use-offline-first";
 import { generateUUID } from "@/utils/uuid";
 import { useState } from "react";
 import { KeyboardAvoidingView, StyleSheet } from "react-native";
-import { List, ListFooter } from "./components";
+import { BottomSheet, List, ListFooter } from "./components";
 
 export type Task = {
   uuid: string;
   name: string;
 };
 
-// Mock Backend API
-const mockApi = {
-  fetchTasks: async (): Promise<Task[]> => {
-    // Simulate network delay
-    // await new Promise(resolve => setTimeout(resolve, 1000));
-    // return [{ uuid: '1', name: 'Task from Cloud ☁️' }];
-    return [];
-  },
-  pushTasks: async (tasks: Task[]) => {
-    console.log("Pushing to backend:", tasks.length, "items");
-  },
-};
-
-export default function PlanerScreen() {
+export default function PlannerScreen() {
   const {
     data: tasksData,
     update: setTasks,
     isLoading,
   } = useOfflineFirst<Task[]>({
     key: "planer-tasks",
-    // fetchRemote: mockApi.fetchTasks, // ⚠️ Disable Mock Sync to preventing overwriting local data with empty array
-    // pushRemote: mockApi.pushTasks,
   });
 
   const tasks = tasksData || [];
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Task | null>(null);
 
   const handleAddTask = (newTask: string) => {
     const newTasks = [...tasks, { name: newTask, uuid: generateUUID() }];
     setTasks(newTasks);
   };
 
-  const handleDeleteTask = (uuid: string) => {
-    const newTasks = tasks.filter((item) => item.uuid !== uuid);
+  const handleDeleteTask = () => {
+    const newTasks = tasks.filter((item) => item.uuid !== selectedItem?.uuid);
     setTasks(newTasks);
+    setSelectedItem(null);
   };
 
-  const handleEdit = (uuid: string) => {
+  const handleEdit = () => {
     console.log("EDIT");
   };
 
@@ -62,10 +48,9 @@ export default function PlanerScreen() {
 
   const handlers = {
     handleAttach,
-    handleEdit,
     handleDelete: handleDeleteTask,
-    handleSelect: setSelectedId,
-    handleClear: () => setSelectedId(null),
+    handleSelect: setSelectedItem,
+    handleClear: () => setSelectedItem(null),
     handleDragEnd,
   };
 
@@ -73,8 +58,9 @@ export default function PlanerScreen() {
     <KeyboardAvoidingView
       style={[styles.container, device.isIOS && { paddingBottom: spacing.lg }]}
     >
-      <List handlers={handlers} data={tasks} selectedUuid={selectedId} />
+      <List handlers={handlers} data={tasks} selectedItem={selectedItem} />
       <ListFooter handleButtonPress={handleAddTask} />
+      <BottomSheet item={selectedItem} onDelete={handleDeleteTask} />
     </KeyboardAvoidingView>
   );
 }
@@ -84,5 +70,8 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "space-between",
     paddingVertical: spacing.md,
+  },
+  contentContainer: {
+    padding: spacing.md,
   },
 });

@@ -17,10 +17,10 @@ const SPACING = (width - ITEM_WIDTH) / 2;
 
 const APP_LIST = [
   {
-    name: "Planer",
+    name: "Planner",
     description: "",
     screen: null,
-    path: "/planer",
+    path: "/planner",
   },
   {
     name: "Note",

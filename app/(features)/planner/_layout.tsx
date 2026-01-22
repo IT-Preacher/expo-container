@@ -11,7 +11,7 @@ export default function PlanerLayout() {
       screenOptions={{
         headerShown: true,
         headerTitleAlign: "center",
-        title: "Planer",
+        title: "Planner",
         headerLeft: (props) => (
           <HeaderBackButton
             {...props}

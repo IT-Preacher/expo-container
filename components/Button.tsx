@@ -1,9 +1,9 @@
-import { colors, radii, spacing, typography } from "@/config";
+import { colors, device, radii, spacing, typography } from "@/config";
 import { Pressable, StyleSheet, Text, ViewStyle } from "react-native";
 
 type ButtonProps = {
   title: string;
-  variant?: "primary" | "base" | "round";
+  variant?: "primary" | "base" | "round" | "delete";
   extraStyles?: ViewStyle;
   onPress?: () => void;
 };
@@ -34,6 +34,9 @@ const styles = StyleSheet.create({
   },
   primary: {
     backgroundColor: colors.primary,
+  },
+  delete: {
+    backgroundColor: device.isIOS ? "#FF3B30" : "#B3261E",
   },
   text: {
     color: "#fff",

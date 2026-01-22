@@ -1,1 +1,1 @@
-export { default as PlanerScreen } from "./planer/home";
+export { default as PlannerScreen } from "./planner/home";
